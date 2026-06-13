@@ -95,11 +95,11 @@
 
     <div class="login-container">
         <h2>Welcome Back</h2>
-        <form action="/login-endpoint" method="POST">
+        <form>
             
             <div class="input-group">
-                <label for="username">Username or Email</label>
-                <input type="text" id="username" name="username" required placeholder="Enter your username">
+                <label for="email">Username or Email</label>
+                <input type="text" id="email" name="email" required placeholder="Enter your username/email">
             </div>
 
             <div class="input-group">
@@ -107,7 +107,7 @@
                 <input type="password" id="password" name="password" required placeholder="Enter your password">
             </div>
 
-            <button type="submit" class="login-btn">Sign In</button>
+            <button type="button" id="loginButton" class="login-btn">Sign In</button>
             
         </form>
 
@@ -115,6 +115,6 @@
             <a href="#">Forgot Password?</a> or <a href="#">Sign Up</a>
         </div>
     </div>
-
+<script type="module" src="login.js"> </script>
 </body>
 </html>
