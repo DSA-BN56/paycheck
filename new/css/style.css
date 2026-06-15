@@ -1,0 +1,13 @@
+
+*{box-sizing:border-box}
+body{margin:0;background:#050505;color:#fff;font-family:Segoe UI,sans-serif}
+.nav{position:fixed;top:0;width:100%;padding:20px;background:rgba(0,0,0,.5);backdrop-filter:blur(10px);z-index:99}
+.hero,.panel{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:40px}
+.hero h1{font-size:clamp(4rem,10vw,8rem)}
+.dark{background:linear-gradient(#000,#111)}
+.shell{background:linear-gradient(135deg,#ffcf00,#a00)}
+.rowe{background:linear-gradient(135deg,#111,#c00)}
+.liqui{background:linear-gradient(135deg,#003f9f,#111)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;width:90%}
+.card{padding:40px;border:1px solid #444;border-radius:16px;background:#111}
+button{padding:15px 30px;font-size:18px}
