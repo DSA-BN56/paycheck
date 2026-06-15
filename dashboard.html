@@ -1,17 +1,13 @@
-import {
-  getAuth,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
 
-const auth = getAuth();
+<h1>Dashboard</h1>
 
-onAuthStateChanged(auth, (user) => {
+<script type="module" src="dashboard.js"></script>
 
-    if (!user) {
-        window.location.href = "index.html";
-        return;
-    }
-
-    console.log("Logged in:", user.email);
-
-});
+</body>
+</html>
