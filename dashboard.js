@@ -2,43 +2,52 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebas
 
 import {
   getAuth,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyA3nDecvFnkb0beOT_QR3o5FrS6tWZ3pgs",
-    authDomain: "paycheck-7382c.firebaseapp.com",
-    projectId: "paycheck-7382c",
-    storageBucket: "paycheck-7382c.firebasestorage.app",
-    messagingSenderId: "580764201388",
-    appId: "1:580764201388:web:8e95ec0dd38d37af308a09"
-  };
+  apiKey: "AIzaSyA3nDecvFnkb0beOT_QR3o5FrS6tWZ3pgs",
+  authDomain: "paycheck-7382c.firebaseapp.com",
+  projectId: "paycheck-7382c",
+  storageBucket: "paycheck-7382c.firebasestorage.app",
+  messagingSenderId: "580764201388",
+  appId: "1:580764201388:web:8e95ec0dd38d37af308a09"
+};
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-document
-  .getElementById("loginButton")
-  .addEventListener("click", async () => {
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "index.html";
+    return;
+  }
+  console.log("Logged in as", user.email);
 
-    const email =
-      document.getElementById("email").value;
 
-    const password =
-      document.getElementById("password").value;
+  document
+    .getElementById("loginButton")
+    .addEventListener("click", async () => {
 
-    try {
+      const email =
+        document.getElementById("email").value;
 
-      await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const password =
+        document.getElementById("password").value;
 
-      window.location.href = "dashboard.html";
+      try {
 
-    } catch (err) {
-      alert("Login Failed");
-    }
+        await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
 
-});
+        window.location.href = "dashboard.html";
+
+      } catch (err) {
+        alert("Login Failed");
+      }
+
+    });
