@@ -3,7 +3,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebas
 import {
   getAuth,
   signInWithEmailAndPassword,
-  onAuthStateChanged
+  onAuthStateChanged,
+  signOut
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -17,37 +18,50 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-
+//Protect Dashboard
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     window.location.href = "index.html";
     return;
   }
   console.log("Logged in as", user.email);
+});
+
+//logout button
+
+document.getElementById("logoutButton").addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+    window.location.href = "index.html";
+  } catch (error) {
+    alert("Error Signing Out");
+    console.error(error);
+  }
+});
 
 
-  document
-    .getElementById("loginButton")
-    .addEventListener("click", async () => {
+document
+  .getElementById("loginButton")
+  .addEventListener("click", async () => {
 
-      const email =
-        document.getElementById("email").value;
+    const email =
+      document.getElementById("email").value;
 
-      const password =
-        document.getElementById("password").value;
+    const password =
+      document.getElementById("password").value;
 
-      try {
+    try {
 
-        await signInWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
-        window.location.href = "dashboard.html";
+      window.location.href = "dashboard.html";
 
-      } catch (err) {
-        alert("Login Failed");
-      }
+    } catch (err) {
+      alert("Login Failed");
+    }
 
-    });
+  });
