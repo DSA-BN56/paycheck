@@ -35,7 +35,7 @@ document
         password
       );
 
-      window.location.href = "dashboard.html";
+      window.location.href = "speaker_dashboard.html";
 
     } catch (err) {
       alert("Login Failed");
