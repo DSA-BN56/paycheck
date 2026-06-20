@@ -16,7 +16,7 @@ let appState = {
 };
 
 const AVATAR_COLORS = [
-  "#3b82f6", "#8b5cf6", "#10b981", "#f59e0b", 
+  "#3b82f6", "#8b5cf6", "#10b981", "#f59e0b",
   "#ec4899", "#06b6d4", "#f43f5e", "#14b8a6"
 ];
 
@@ -34,7 +34,7 @@ function loadSettings() {
   const savedAutoSpeak = localStorage.getItem("auto_speak_enabled");
   const savedAutoRefresh = localStorage.getItem("auto_refresh_enabled");
   const savedVoiceName = localStorage.getItem("speech_voice_name");
-  
+
   if (savedUrl) {
     appState.dbUrl = savedUrl;
     document.getElementById("db-url-input").value = savedUrl;
@@ -102,11 +102,11 @@ async function syncData() {
     } else {
       data = await fetchViaREST();
     }
-    
+
     const transactionList = processFirebaseData(data);
     const previousTxnIds = new Set(appState.transactions.map(t => t.id));
     appState.transactions = transactionList;
-    
+
     updateMetrics();
     renderTransactions();
     updateConnectionStatus("connected", "Live Sync");
@@ -134,7 +134,7 @@ async function fetchViaFirebaseSDK() {
     appState.firebaseInitialized = true;
   }
   return new Promise((resolve, reject) => {
-    appState.firebaseDb.ref("messages").once("value", 
+    appState.firebaseDb.ref("messages").once("value",
       snap => resolve(snap.val()), err => reject(err)
     );
   });
@@ -195,10 +195,10 @@ function initSpeechSynthesis() {
 function speakTransaction(transaction) {
   if (!('speechSynthesis' in window)) return;
   stopSpeaking();
-  
+
   const text = transaction.speakText || transaction.text;
   const utterance = new SpeechSynthesisUtterance(text);
-  
+
   const selectedVoiceName = document.getElementById("voice-select").value;
   if (selectedVoiceName && appState.voices) {
     const voice = appState.voices.find(v => v.name === selectedVoiceName);
@@ -339,14 +339,14 @@ function animateNumericValue(element, targetVal, isCurrency) {
 function renderTransactions() {
   const container = document.getElementById("transactions-container");
   container.innerHTML = "";
-  
+
   let filtered = appState.transactions.filter(txn => {
     const query = appState.searchQuery.toLowerCase();
-    return txn.creditor.toLowerCase().includes(query) || 
-           String(txn.amount).includes(query) || 
-           txn.text.toLowerCase().includes(query);
+    return txn.creditor.toLowerCase().includes(query) ||
+      String(txn.amount).includes(query) ||
+      txn.text.toLowerCase().includes(query);
   });
-  
+
   filtered.sort((a, b) => {
     switch (appState.sortBy) {
       case "time-asc": return a.timestamp - b.timestamp || a.id.localeCompare(b.id);
@@ -369,7 +369,7 @@ function renderTransactions() {
     const avatarColor = getAvatarColor(txn.creditor);
     const firstChar = txn.creditor.charAt(0);
     const isSpoken = appState.spokenTxnIds.has(txn.id);
-    
+
     card.innerHTML = `
       <div class="card-header">
         <div class="creditor-profile">
@@ -398,7 +398,7 @@ function renderTransactions() {
         </div>
       </div>
     `;
-    
+
     card.querySelector(".speak-card-btn").addEventListener("click", () => speakTransaction(txn));
     card.querySelector(".copy-card-btn").addEventListener("click", () => copyToClipboard(txn.text));
     container.appendChild(card);
@@ -440,9 +440,40 @@ function setupEventListeners() {
   document.getElementById("speech-stop-btn").addEventListener("click", stopSpeaking);
 }
 
+let refreshCount = 0;
+const MAX_REFRESHES = 5;
+
 function toggleAutoRefreshTimer() {
-  if (appState.refreshIntervalId) clearInterval(appState.refreshIntervalId);
-  if (appState.autoRefresh) appState.refreshIntervalId = setInterval(syncData, 10000);
+
+  if (appState.refreshIntervalId) {
+    clearInterval(appState.refreshIntervalId);
+  }
+
+  refreshCount = 0;
+
+  if (appState.autoRefresh) {
+
+    appState.refreshIntervalId = setInterval(() => {
+
+      if (refreshCount >= MAX_REFRESHES) {
+
+        clearInterval(appState.refreshIntervalId);
+
+        appState.autoRefresh = false;
+
+        document.getElementById("auto-refresh-toggle").checked = false;
+
+        showToast("Auto Sync stopped after 5 refreshes", "info");
+
+        return;
+      }
+
+      refreshCount++;
+
+      syncData();
+
+    }, 10000);
+  }
 }
 
 function updateConnectionStatus(state, labelText) {
