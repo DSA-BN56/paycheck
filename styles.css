@@ -378,8 +378,8 @@ body {
   display: flex;
   align-items: center;
   gap: 1rem;
-  flex-grow: 1;
-  max-width: 600px;
+  width: 100%;
+  justify-content: space-between;
 }
 
 .search-box {
