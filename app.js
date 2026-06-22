@@ -5,6 +5,7 @@ let appState = {
   transactions: [],
   searchQuery: "",
   sortBy: "time-desc",
+  dateRange: "3",
   autoSpeak: false,
   autoRefresh: true,
   refreshIntervalId: null,
@@ -303,14 +304,34 @@ function speakNewTransactions(allTransactions, previousIds) {
   }
 }
 
+// Returns transactions filtered by the active date range pill
+function getDateFilteredTransactions() {
+  const range = appState.dateRange;
+  if (range === "all") return appState.transactions;
+
+  const now = Date.now();
+  let cutoff;
+  if (range === "today") {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    cutoff = d.getTime();
+  } else {
+    const days = parseInt(range);
+    cutoff = now - days * 24 * 60 * 60 * 1000;
+  }
+
+  return appState.transactions.filter(t => t.timestamp >= cutoff);
+}
+
 function updateMetrics() {
   const totalAmountEl = document.getElementById("stat-total-amount");
   const totalCountEl = document.getElementById("stat-total-count");
   const totalCreditorsEl = document.getElementById("stat-total-creditors");
-  const totalVolume = appState.transactions.reduce((acc, t) => acc + t.amount, 0);
-  const creditorsSet = new Set(appState.transactions.map(t => t.creditor.toLowerCase()));
+  const dateFiltered = getDateFilteredTransactions();
+  const totalVolume = dateFiltered.reduce((acc, t) => acc + t.amount, 0);
+  const creditorsSet = new Set(dateFiltered.map(t => t.creditor.toLowerCase()));
   animateNumericValue(totalAmountEl, totalVolume, true);
-  animateNumericValue(totalCountEl, appState.transactions.length, false);
+  animateNumericValue(totalCountEl, dateFiltered.length, false);
   animateNumericValue(totalCreditorsEl, creditorsSet.size, false);
 }
 
@@ -340,12 +361,18 @@ function renderTransactions() {
   const container = document.getElementById("transactions-container");
   container.innerHTML = "";
 
-  let filtered = appState.transactions.filter(txn => {
+  // Step 1: apply date range filter
+  let filtered = getDateFilteredTransactions();
+
+  // Step 2: apply search query on top of date-filtered results
+  if (appState.searchQuery) {
     const query = appState.searchQuery.toLowerCase();
-    return txn.creditor.toLowerCase().includes(query) ||
+    filtered = filtered.filter(txn =>
+      txn.creditor.toLowerCase().includes(query) ||
       String(txn.amount).includes(query) ||
-      txn.text.toLowerCase().includes(query);
-  });
+      txn.text.toLowerCase().includes(query)
+    );
+  }
 
   filtered.sort((a, b) => {
     switch (appState.sortBy) {
@@ -428,6 +455,17 @@ function setupEventListeners() {
   document.getElementById("setup-btn").addEventListener("click", () => drawer.classList.add("active"));
   document.getElementById("search-input").addEventListener("input", e => { appState.searchQuery = e.target.value; renderTransactions(); });
   document.getElementById("sort-select").addEventListener("change", e => { appState.sortBy = e.target.value; renderTransactions(); });
+
+  // Date range pill buttons
+  document.querySelectorAll(".date-pill").forEach(pill => {
+    pill.addEventListener("click", () => {
+      document.querySelectorAll(".date-pill").forEach(p => p.classList.remove("active"));
+      pill.classList.add("active");
+      appState.dateRange = pill.dataset.range;
+      updateMetrics();
+      renderTransactions();
+    });
+  });
   document.getElementById("auto-speak-toggle").addEventListener("change", e => {
     appState.autoSpeak = e.target.checked;
     localStorage.setItem("auto_speak_enabled", e.target.checked);
