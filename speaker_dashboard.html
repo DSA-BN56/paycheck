@@ -64,6 +64,16 @@
             <circle cx="12" cy="12" r="3" />
           </svg>
         </button>
+
+        <!-- Log Out Button -->
+        <button id="logout-btn" class="icon-btn logout-btn" title="Log Out">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" x2="9" y1="12" y2="12" />
+          </svg>
+        </button>
       </div>
     </header>
 
@@ -274,7 +284,8 @@
 
     import {
       getAuth,
-      onAuthStateChanged
+      onAuthStateChanged,
+      signOut
     }
       from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
@@ -300,6 +311,15 @@
         document.body.style.visibility = "visible";
       }
 
+    });
+
+    document.getElementById("logout-btn").addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        window.location.replace("index.html");
+      } catch (err) {
+        console.error("Logout failed:", err);
+      }
     });
 
   </script>

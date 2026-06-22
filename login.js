@@ -2,6 +2,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebas
 
 import {
   getAuth,
+  setPersistence,
+  browserSessionPersistence,
   signInWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
@@ -28,6 +30,8 @@ document
       document.getElementById("password").value;
 
     try {
+
+      await setPersistence(auth, browserSessionPersistence);
 
       await signInWithEmailAndPassword(
         auth,

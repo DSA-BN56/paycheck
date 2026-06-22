@@ -241,6 +241,13 @@ body {
   height: 20px;
 }
 
+.logout-btn:hover {
+  background: var(--accent-red-glow);
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+  transform: translateY(-2px);
+}
+
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
