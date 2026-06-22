@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 
-<body class="dark-theme">
+<body class="dark-theme" style="visibility: hidden;">
   <!-- Background glow effects -->
   <div class="bg-glow bg-glow-1"></div>
   <div class="bg-glow bg-glow-2"></div>
@@ -296,6 +296,8 @@
 
         window.location.replace("index.html");
 
+      } else {
+        document.body.style.visibility = "visible";
       }
 
     });
