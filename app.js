@@ -1,19 +1,29 @@
-const DEFAULT_DB_URL = "https://sms-speaker-45f37-default-rtdb.asia-southeast1.firebasedatabase.app";
+
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import {
+  getDatabase,
+  ref,
+  get
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+
+
+import { firebaseConfig }
+  from "./firebasesConfig.js";
+
+
 let appState = {
-  dbUrl: DEFAULT_DB_URL,
-  sdkConfig: null,
   transactions: [],
   searchQuery: "",
   sortBy: "time-desc",
   dateRange: "3",
   autoSpeak: false,
-  autoRefresh: true,
   refreshIntervalId: null,
   activeSpeechUtterance: null,
-  spokenTxnIds: new Set(),
-  firebaseInitialized: false,
-  firebaseApp: null,
-  firebaseDb: null
+  syncInProgress: false,
+  spokenTxnIds: new Set()
 };
 
 const AVATAR_COLORS = [
@@ -26,128 +36,78 @@ document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners();
   initSpeechSynthesis();
   syncData();
-  toggleAutoRefreshTimer();
 });
 
+document
+  .getElementById("refresh-btn")
+  .addEventListener("click", async () => {
+    const btn = document.getElementById("refresh-btn");
+
+    btn.disabled = true;
+
+    try {
+      await syncData();
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
 function loadSettings() {
-  const savedUrl = localStorage.getItem("firebase_db_url");
-  const savedSdk = localStorage.getItem("firebase_sdk_config");
   const savedAutoSpeak = localStorage.getItem("auto_speak_enabled");
-  const savedAutoRefresh = localStorage.getItem("auto_refresh_enabled");
   const savedVoiceName = localStorage.getItem("speech_voice_name");
 
-  if (savedUrl) {
-    appState.dbUrl = savedUrl;
-    document.getElementById("db-url-input").value = savedUrl;
-  }
-  if (savedSdk) {
-    appState.sdkConfig = JSON.parse(savedSdk);
-    document.getElementById("sdk-config-input").value = savedSdk;
-  }
   if (savedAutoSpeak === "true") {
     appState.autoSpeak = true;
     document.getElementById("auto-speak-toggle").checked = true;
-  }
-  if (savedAutoRefresh === "false") {
-    appState.autoRefresh = false;
-    document.getElementById("auto-refresh-toggle").checked = false;
   }
   if (savedVoiceName) {
     appState.savedVoiceName = savedVoiceName;
   }
 }
 
-function saveSettings(url, sdkConfigText) {
-  let formattedUrl = url.trim().replace(/\/$/, "");
-  localStorage.setItem("firebase_db_url", formattedUrl);
-  appState.dbUrl = formattedUrl;
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+async function fetchViaFirebaseSDK() {
 
-  if (sdkConfigText.trim()) {
-    try {
-      const parsed = JSON.parse(sdkConfigText);
-      localStorage.setItem("firebase_sdk_config", JSON.stringify(parsed));
-      appState.sdkConfig = parsed;
-    } catch (e) {
-      showToast("Invalid JSON in Config. Using REST endpoint instead.", "error");
-      localStorage.removeItem("firebase_sdk_config");
-      appState.sdkConfig = null;
-    }
-  } else {
-    localStorage.removeItem("firebase_sdk_config");
-    appState.sdkConfig = null;
-  }
-
-  showToast("Settings saved!", "success");
-  appState.firebaseInitialized = false;
-  syncData();
-}
-
-function resetSettings() {
-  localStorage.removeItem("firebase_db_url");
-  localStorage.removeItem("firebase_sdk_config");
-  appState.dbUrl = DEFAULT_DB_URL;
-  appState.sdkConfig = null;
-  document.getElementById("db-url-input").value = DEFAULT_DB_URL;
-  document.getElementById("sdk-config-input").value = "";
-  appState.firebaseInitialized = false;
-  showToast("Settings reset.", "info");
-  syncData();
+  const snapshot =
+    await get(ref(db, "messages"));
+  return snapshot.val();
 }
 
 async function syncData() {
+  if (appState.syncInProgress)
+    return;
+
+  appState.syncInProgress = true;
+
   updateConnectionStatus("loading", "Connecting...");
+
   try {
-    let data = null;
-    if (appState.sdkConfig) {
-      data = await fetchViaFirebaseSDK();
-    } else {
-      data = await fetchViaREST();
-    }
-
+    const data = await fetchViaFirebaseSDK();
     const transactionList = processFirebaseData(data);
-    const previousTxnIds = new Set(appState.transactions.map(t => t.id));
+    const previousTxnIds =
+      new Set(appState.transactions.map(t => t.id));
     appState.transactions = transactionList;
-
     updateMetrics();
     renderTransactions();
-    updateConnectionStatus("connected", "Live Sync");
+    updateConnectionStatus("connected", "Live");
     hideWarningBanner();
-
     if (appState.autoSpeak && previousTxnIds.size > 0) {
       speakNewTransactions(transactionList, previousTxnIds);
     } else if (previousTxnIds.size === 0) {
-      transactionList.forEach(t => appState.spokenTxnIds.add(t.id));
+      transactionList.forEach(t =>
+        appState.spokenTxnIds.add(t.id));
     }
-  } catch (error) {
-    console.error(error);
+
+  } catch (err) {
+    console.error(err);
     updateConnectionStatus("disconnected", "Offline");
     showWarningBanner();
+  } finally {
+    appState.syncInProgress = false;
   }
-}
 
-async function fetchViaFirebaseSDK() {
-  if (!appState.firebaseInitialized) {
-    const config = { ...appState.sdkConfig };
-    if (!config.databaseURL) config.databaseURL = appState.dbUrl;
-    if (firebase.apps.length > 0) await firebase.app().delete();
-    appState.firebaseApp = firebase.initializeApp(config);
-    appState.firebaseDb = firebase.database();
-    appState.firebaseInitialized = true;
-  }
-  return new Promise((resolve, reject) => {
-    appState.firebaseDb.ref("messages").once("value",
-      snap => resolve(snap.val()), err => reject(err)
-    );
-  });
 }
-
-async function fetchViaREST() {
-  const url = `${appState.dbUrl}/messages.json`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("REST fetch failed");
-  return await res.json();
-}
-
 function processFirebaseData(rawData) {
   if (!rawData) return [];
   return Object.keys(rawData).map(key => {
@@ -439,23 +399,9 @@ function getAvatarColor(name) {
 }
 
 function setupEventListeners() {
-  document.getElementById("refresh-btn").addEventListener("click", syncData);
-  const drawer = document.getElementById("settings-drawer");
-  document.getElementById("settings-toggle").addEventListener("click", () => drawer.classList.add("active"));
-  document.getElementById("settings-close").addEventListener("click", () => drawer.classList.remove("active"));
-  drawer.addEventListener("click", e => { if (e.target === drawer) drawer.classList.remove("active"); });
-  document.getElementById("settings-form").addEventListener("submit", e => {
-    e.preventDefault();
-    saveSettings(document.getElementById("db-url-input").value, document.getElementById("sdk-config-input").value);
-    drawer.classList.remove("active");
-  });
-  document.getElementById("reset-settings-btn").addEventListener("click", () => {
-    if (confirm("Reset connection settings?")) { resetSettings(); drawer.classList.remove("active"); }
-  });
-  document.getElementById("setup-btn").addEventListener("click", () => drawer.classList.add("active"));
   document.getElementById("search-input").addEventListener("input", e => { appState.searchQuery = e.target.value; renderTransactions(); });
   document.getElementById("sort-select").addEventListener("change", e => { appState.sortBy = e.target.value; renderTransactions(); });
-
+  document.getElementById("refresh-btn").addEventListener("click", syncData);
   // Date range pill buttons
   document.querySelectorAll(".date-pill").forEach(pill => {
     pill.addEventListener("click", () => {
@@ -470,49 +416,11 @@ function setupEventListeners() {
     appState.autoSpeak = e.target.checked;
     localStorage.setItem("auto_speak_enabled", e.target.checked);
   });
-  document.getElementById("auto-refresh-toggle").addEventListener("change", e => {
-    appState.autoRefresh = e.target.checked;
-    localStorage.setItem("auto_refresh_enabled", e.target.checked);
-    toggleAutoRefreshTimer();
-  });
+
   document.getElementById("speech-stop-btn").addEventListener("click", stopSpeaking);
 }
 
-let refreshCount = 0;
-const MAX_REFRESHES = 5;
 
-function toggleAutoRefreshTimer() {
-
-  if (appState.refreshIntervalId) {
-    clearInterval(appState.refreshIntervalId);
-  }
-
-  refreshCount = 0;
-
-  if (appState.autoRefresh) {
-
-    appState.refreshIntervalId = setInterval(() => {
-
-      if (refreshCount >= MAX_REFRESHES) {
-
-        clearInterval(appState.refreshIntervalId);
-
-        appState.autoRefresh = false;
-
-        document.getElementById("auto-refresh-toggle").checked = false;
-
-        showToast("Auto Sync stopped after 5 refreshes", "info");
-
-        return;
-      }
-
-      refreshCount++;
-
-      syncData();
-
-    }, 10000);
-  }
-}
 
 function updateConnectionStatus(state, labelText) {
   const badge = document.getElementById("connection-status");

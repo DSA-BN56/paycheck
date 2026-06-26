@@ -8,13 +8,14 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyA3nDecvFnkb0beOT_QR3o5FrS6tWZ3pgs",
-    authDomain: "paycheck-7382c.firebaseapp.com",
-    projectId: "paycheck-7382c",
-    storageBucket: "paycheck-7382c.firebasestorage.app",
-    messagingSenderId: "580764201388",
-    appId: "1:580764201388:web:8e95ec0dd38d37af308a09"
-  };
+  apiKey: "AIzaSyCL9t51pGmVPTiRsQLSrSe35ZwdglHtXPI",
+  authDomain: "sms-speaker-45f37.firebaseapp.com",
+  databaseURL: "https://sms-speaker-45f37-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "sms-speaker-45f37",
+  storageBucket: "sms-speaker-45f37.firebasestorage.app",
+  messagingSenderId: "501657520398",
+  appId: "1:501657520398:web:98f522df504de369852f5f"
+};
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -45,4 +46,4 @@ document
       alert("Login Failed");
     }
 
-});
+  });
