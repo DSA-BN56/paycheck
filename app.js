@@ -1,4 +1,3 @@
-
 import {
   initializeApp
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
@@ -6,7 +5,7 @@ import {
 import {
   getDatabase,
   ref,
-  get
+  onValue
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
 
 
@@ -22,7 +21,6 @@ let appState = {
   autoSpeak: false,
   refreshIntervalId: null,
   activeSpeechUtterance: null,
-  syncInProgress: false,
   spokenTxnIds: new Set()
 };
 
@@ -35,21 +33,14 @@ document.addEventListener("DOMContentLoaded", () => {
   loadSettings();
   setupEventListeners();
   initSpeechSynthesis();
-  syncData();
 });
 
 document
   .getElementById("refresh-btn")
   .addEventListener("click", async () => {
     const btn = document.getElementById("refresh-btn");
-
     btn.disabled = true;
 
-    try {
-      await syncData();
-    } finally {
-      btn.disabled = false;
-    }
   });
 
 function loadSettings() {
@@ -67,47 +58,43 @@ function loadSettings() {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-async function fetchViaFirebaseSDK() {
+const messagesRef = ref(db, "messages");
+onValue(messagesRef, (snapshot) => {
+  updateConnectionStatus("connected", "Live");
+  hideWarningBanner();
+  const data = snapshot.val();
 
-  const snapshot =
-    await get(ref(db, "messages"));
-  return snapshot.val();
-}
+  const transactionList = processFirebaseData(data);
 
-async function syncData() {
-  if (appState.syncInProgress)
-    return;
+  const previousTxnIds =
+    new Set(appState.transactions.map(t => t.id));
 
-  appState.syncInProgress = true;
+  appState.transactions = transactionList;
 
-  updateConnectionStatus("loading", "Connecting...");
+  updateMetrics();
+  renderTransactions();
 
-  try {
-    const data = await fetchViaFirebaseSDK();
-    const transactionList = processFirebaseData(data);
-    const previousTxnIds =
-      new Set(appState.transactions.map(t => t.id));
-    appState.transactions = transactionList;
-    updateMetrics();
-    renderTransactions();
-    updateConnectionStatus("connected", "Live");
-    hideWarningBanner();
-    if (appState.autoSpeak && previousTxnIds.size > 0) {
-      speakNewTransactions(transactionList, previousTxnIds);
-    } else if (previousTxnIds.size === 0) {
-      transactionList.forEach(t =>
-        appState.spokenTxnIds.add(t.id));
-    }
-
-  } catch (err) {
-    console.error(err);
-    updateConnectionStatus("disconnected", "Offline");
-    showWarningBanner();
-  } finally {
-    appState.syncInProgress = false;
+  if (appState.autoSpeak && previousTxnIds.size > 0) {
+    speakNewTransactions(transactionList, previousTxnIds);
   }
 
-}
+},
+  (error) => {
+
+    console.error(error);
+
+    updateConnectionStatus("disconnected", "Offline");
+
+    showWarningBanner();
+
+  }
+);
+
+
+
+
+
+
 function processFirebaseData(rawData) {
   if (!rawData) return [];
   return Object.keys(rawData).map(key => {
@@ -401,7 +388,7 @@ function getAvatarColor(name) {
 function setupEventListeners() {
   document.getElementById("search-input").addEventListener("input", e => { appState.searchQuery = e.target.value; renderTransactions(); });
   document.getElementById("sort-select").addEventListener("change", e => { appState.sortBy = e.target.value; renderTransactions(); });
-  document.getElementById("refresh-btn").addEventListener("click", syncData);
+
   // Date range pill buttons
   document.querySelectorAll(".date-pill").forEach(pill => {
     pill.addEventListener("click", () => {
