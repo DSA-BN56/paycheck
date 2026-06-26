@@ -35,13 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initSpeechSynthesis();
 });
 
-document
-  .getElementById("refresh-btn")
-  .addEventListener("click", async () => {
-    const btn = document.getElementById("refresh-btn");
-    btn.disabled = true;
-
-  });
 
 function loadSettings() {
   const savedAutoSpeak = localStorage.getItem("auto_speak_enabled");
@@ -59,7 +52,7 @@ function loadSettings() {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const messagesRef = ref(db, "messages");
-onValue(messagesRef, (snapshot) => {
+const unsubscribe = onValue(messagesRef, (snapshot) => {
   updateConnectionStatus("connected", "Live");
   hideWarningBanner();
   const data = snapshot.val();
