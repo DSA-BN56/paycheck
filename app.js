@@ -35,6 +35,16 @@ document.addEventListener("DOMContentLoaded", () => {
   initSpeechSynthesis();
 });
 
+const toggle = document.getElementById("controls-toggle");
+const content = document.getElementById("controls-content");
+const arrow = document.getElementById("controls-arrow");
+
+toggle.addEventListener("click", () => {
+
+  content.classList.toggle("collapsed");
+
+  arrow.classList.toggle("open");
+});
 
 function loadSettings() {
   const savedAutoSpeak = localStorage.getItem("auto_speak_enabled");

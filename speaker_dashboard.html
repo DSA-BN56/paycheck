@@ -114,61 +114,75 @@
 
       <!-- Filters and Live Control Bar -->
       <section class="controls-panel glass">
-        <!-- Date Range Filter -->
-        <div class="date-filter-row">
-          <span class="control-label">Date Range:</span>
-          <div class="date-filter-pills">
-            <button class="date-pill" data-range="today">Today</button>
-            <button class="date-pill active" data-range="3">Last 3 Days</button>
-            <button class="date-pill" data-range="7">Last 7 Days</button>
-            <button class="date-pill" data-range="30">Last 30 Days</button>
-            <button class="date-pill" data-range="all">All Time</button>
-          </div>
-        </div>
 
-        <!-- Search & Sort -->
-        <div class="filter-controls">
-          <div class="search-box">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" x2="16.65" y1="21" y2="16.65" />
+        <button class="controls-header" id="controls-toggle">
+          <div>
+            <span class="metric-title">Control Panel</span>
+          </div>
+
+          <span id="controls-arrow">
+            <svg viewBox="0 0 24 24">
+              <polyline points="6 9 12 15 18 9" />
             </svg>
-            <input type="text" id="search-input" placeholder="Search creditor or amount...">
+          </span>
+        </button>
+
+        <div class="controls-content collapsed" id="controls-content">
+          <!-- Date Range Filter -->
+          <div class="date-filter-row">
+            <span class="control-label">Date Range:</span>
+            <div class="date-filter-pills">
+              <button class="date-pill" data-range="today">Today</button>
+              <button class="date-pill active" data-range="3">Last 3 Days</button>
+              <button class="date-pill" data-range="7">Last 7 Days</button>
+              <button class="date-pill" data-range="30">Last 30 Days</button>
+              <button class="date-pill" data-range="all">All Time</button>
+            </div>
           </div>
 
-          <div class="select-wrapper">
-            <select id="sort-select">
-              <option value="time-desc">Newest First</option>
-              <option value="time-asc">Oldest First</option>
-              <option value="amount-desc">Amount: High to Low</option>
-              <option value="amount-asc">Amount: Low to High</option>
-            </select>
-          </div>
-        </div>
+          <!-- Search & Sort -->
+          <div class="filter-controls">
+            <div class="search-box">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" x2="16.65" y1="21" y2="16.65" />
+              </svg>
+              <input type="text" id="search-input" placeholder="Search creditor or amount...">
+            </div>
 
-        <!-- Live Refresh & Speech Control -->
-        <div class="live-controls">
-          <!-- Voice Selector -->
-          <div class="voice-setup">
-            <span class="control-label">Voice:</span>
-            <div class="select-wrapper select-voice">
-              <select id="voice-select">
-                <option value="">Default System Voice</option>
+            <div class="select-wrapper">
+              <select id="sort-select">
+                <option value="time-desc">Newest First</option>
+                <option value="time-asc">Oldest First</option>
+                <option value="amount-desc">Amount: High to Low</option>
+                <option value="amount-asc">Amount: Low to High</option>
               </select>
             </div>
           </div>
 
-          <!-- TTS Auto Toggle -->
-          <label class="switch-container">
-            <input type="checkbox" id="auto-speak-toggle">
-            <span class="slider"></span>
-            <span class="switch-label">Auto Speak</span>
-          </label>
+          <!-- Live Refresh & Speech Control -->
+          <div class="live-controls">
+            <!-- Voice Selector -->
+            <div class="voice-setup">
+              <span class="control-label">Voice:</span>
+              <div class="select-wrapper select-voice">
+                <select id="voice-select">
+                  <option value="">Default System Voice</option>
+                </select>
+              </div>
+            </div>
 
-          <!-- Auto Refresh Toggle -->
-          <!-- Auto Refresh is removed -->
-        </div>
+            <!-- TTS Auto Toggle -->
+            <label class="switch-container">
+              <input type="checkbox" id="auto-speak-toggle">
+              <span class="slider"></span>
+              <span class="switch-label">Auto Speak</span>
+            </label>
+
+            <!-- Auto Refresh Toggle -->
+            <!-- Auto Refresh is removed -->
+          </div>
       </section>
 
       <!-- Connection Alert Message -->
