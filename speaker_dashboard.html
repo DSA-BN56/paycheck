@@ -47,6 +47,15 @@
         <!-- Settings Button -->
         <!-- removed settings button-->
 
+        <!-- Control Panel (Gear) Button -->
+        <button id="control-panel-btn" class="icon-btn control-panel-btn" title="Control Panel">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+        </button>
+
         <!-- Log Out Button -->
         <button id="logout-btn" class="icon-btn logout-btn" title="Log Out">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -113,21 +122,21 @@
     <main class="dashboard-body">
 
       <!-- Filters and Live Control Bar -->
-      <section class="controls-panel glass">
+      <section class="controls-panel glass collapsed" id="controls-panel">
 
-        <button class="controls-header" id="controls-toggle">
+        <div class="controls-header">
           <div>
             <span class="metric-title">Control Panel</span>
           </div>
 
-          <span id="controls-arrow">
-            <svg viewBox="0 0 24 24">
-              <polyline points="6 9 12 15 18 9" />
+          <button id="controls-close-btn" class="icon-btn" title="Collapse Control Panel" style="width: 32px; height: 32px; border-radius: var(--border-radius-sm);">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="18 15 12 9 6 15"></polyline>
             </svg>
-          </span>
-        </button>
+          </button>
+        </div>
 
-        <div class="controls-content collapsed" id="controls-content">
+        <div class="controls-content" id="controls-content">
           <!-- Date Range Filter -->
           <div class="date-filter-row">
             <span class="control-label">Date Range:</span>

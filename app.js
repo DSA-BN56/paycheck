@@ -35,16 +35,21 @@ document.addEventListener("DOMContentLoaded", () => {
   initSpeechSynthesis();
 });
 
-const toggle = document.getElementById("controls-toggle");
-const content = document.getElementById("controls-content");
-const arrow = document.getElementById("controls-arrow");
+const controlPanelBtn = document.getElementById("control-panel-btn");
+const controlsPanel = document.getElementById("controls-panel");
+const controlsCloseBtn = document.getElementById("controls-close-btn");
 
-toggle.addEventListener("click", () => {
+if (controlPanelBtn && controlsPanel && controlsCloseBtn) {
+  controlPanelBtn.addEventListener("click", () => {
+    controlsPanel.classList.toggle("collapsed");
+    controlPanelBtn.classList.toggle("active");
+  });
 
-  content.classList.toggle("collapsed");
-
-  arrow.classList.toggle("open");
-});
+  controlsCloseBtn.addEventListener("click", () => {
+    controlsPanel.classList.add("collapsed");
+    controlPanelBtn.classList.remove("active");
+  });
+}
 
 function loadSettings() {
   const savedAutoSpeak = localStorage.getItem("auto_speak_enabled");
